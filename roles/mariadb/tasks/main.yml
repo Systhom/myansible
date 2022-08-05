@@ -1,0 +1,14 @@
+---
+# tasks file for mariadb
+#
+# 1. Installation de mariadb via apt 
+- name: "Installation de mariadb via apt" 
+  apt: 
+    name: "mariadb-server"
+    state: "present" 
+
+# 2. Listen 0.0.0.0
+- name: "Configure listen 0.0.0.0"
+  command:
+    sed -i 's/127.0.0.1/0.0.0.0/g' /etc/mysql/mariadb.conf.d/50-server.cnf 
+  notify: [ "restart mariadb" ]

@@ -1,0 +1,17 @@
+---
+# tasks file for confapache2
+- name: "Configure logrotate"
+  command: 
+    sed -i 's/rotate 14/rotate 365/g' /etc/logrotate.d/apache2
+
+- name: "Create vhost"
+  template: 
+    src: vhost.j2
+    dest: "{{ apache_conf_path }}/sites-available/{{ apache2_domainname }}.conf"
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: "Enable vhost"
+  command: a2ensite {{ apache2_domainname }}
+  notify: "restart apache"

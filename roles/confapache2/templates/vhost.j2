@@ -1,0 +1,11 @@
+<VirtualHost *:80>
+
+
+ServerName {{ apache2_domainname }} 
+
+DocumentRoot /var/www/{{ apache2_domainname }} 
+
+ErrorLog ${APACHE_LOG_DIR}/{{ apache2_domainname }}.error.log
+CustomLog ${APACHE_LOG_DIR}/{{ apache2_domainname }}.access.log combined
+
+</VirtualHost>

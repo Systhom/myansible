@@ -1,0 +1,4 @@
+---
+# defaults file for confapache2
+apache2_domainname: "thom.wordpress.com"
+apache_conf_path: "/etc/apache2"

@@ -10,7 +10,7 @@
     private: false
   - name: password
     prompt: "Veuillez entrer le password du serveur de destination"
-    private: true 
+    private: true
   tasks: 
     - add_host:
         name: "{{ item }}"
@@ -26,4 +26,4 @@
   vars: 
     ansible_password: "{{ hostvars['login']['password'] }}"
   roles: 
-    - role: "apache2"
+    - role: confapache2
