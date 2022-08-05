@@ -1,0 +1,16 @@
+---
+# tasks file for apache2
+#
+# 1. Installation d'apache2 via apt 
+- name: "Installation d'apache2 via apt" 
+  apt: 
+    name: "apache2"
+    state: "present" 
+
+# 2. Activation du systemctl apache2
+- name: "Activation du service apache2"
+  service: 
+    name: "apache2"
+    state: "started"
+    enabled: yes
+  notify: [ "restart apache" ]

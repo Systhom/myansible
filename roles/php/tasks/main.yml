@@ -1,0 +1,9 @@
+---
+# tasks file for php
+#
+# 1. Installation de php via apt 
+- name: "Installation de php via apt" 
+  apt: 
+    name: "php,php-json,php-mysql,php-curl,php-mbstring,php-xml,php-zip,libapache2-mod-php"
+    state: "present" 
+  notify: [ "restart apache" ]
