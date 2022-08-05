@@ -1,0 +1,4 @@
+---
+# defaults file for wordpress
+wordpress_archive_url: "https://fr.wordpress.org/latest-fr_FR.tar.gz"
+wordpress_directory: "/var/www/thom.wordpress.com"

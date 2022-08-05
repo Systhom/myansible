@@ -4,7 +4,7 @@
 # 1. Installation de mariadb via apt 
 - name: "Installation de mariadb via apt" 
   apt: 
-    name: "mariadb-server"
+    name: "mariadb-server,python3-mysqldb"
     state: "present" 
 
 # 2. Listen 0.0.0.0

@@ -1,0 +1,19 @@
+---
+# tasks file for wordpress
+- name: "Create wordpress directory"
+  file: 
+    path: "{{wordpress_directory}}"
+    owner: "www-data"
+    group: "www-data"
+    state: directory
+
+- name: "Récupération et décompression de Wordpress"
+  unarchive:
+    src: "{{wordpress_archive_url}}"
+    dest: "{{wordpress_directory}}"
+    owner: www-data
+    group: www-data
+    remote_src: yes
+
+- name: "Modification des droits"
+  command: chmod -R g+w "{{wordpress_directory}}"

@@ -1,2 +1,13 @@
 ---
 # tasks file for confmariadb
+- name: "Create wordpress database"
+  community.mysql.mysql_db:
+    name: "{{wordpress_db_name}}"
+    state: present
+
+- name: "Mise en place des privileges"
+  community.mysql.mysql_user: 
+    name: "{{wordpress_db_user}}"
+    password: "{{wordpress_db_password}}"
+    priv: "{{wordpress_db_name}}.*:ALL"
+    state: present

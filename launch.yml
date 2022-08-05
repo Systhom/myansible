@@ -26,4 +26,4 @@
   vars: 
     ansible_password: "{{ hostvars['login']['password'] }}"
   roles: 
-    - role: confapache2
+    - role: wordpress
