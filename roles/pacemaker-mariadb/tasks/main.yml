@@ -1,0 +1,10 @@
+---
+# tasks file for pacemaker-pgsql
+
+- include_tasks: ssh.yml
+- include_tasks: packages.yml
+- include_tasks: corosync.yml
+- include_tasks: vip.yml
+- include_tasks: install_mariadb_master.yml
+- include_tasks: install_mariadb_slave.yml
+- include_tasks: mariadb_cluster.yml

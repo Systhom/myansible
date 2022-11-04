@@ -1,0 +1,25 @@
+---
+
+# 1. Activation des modules nécessaires
+- name: "Activating modules apache2"
+  command: "a2enmod {{ item.module }}"
+  with_items: "{{ apache2_modules }}"
+  tags: apache2
+  register: module_result
+  changed_when: "'Enabling module' in module_result.stdout"
+
+# 2. Configuration du logrotate
+- name: "Configure logrotate"
+  lineinfile:
+    path: "{{ apache2_logrotate }}"
+    regexp: "rotate 14"
+    line: "    rotate 365"
+    backrefs: yes
+  tags: apache2
+
+# 3. Configuration du servername pour éviter les erreurs dans apache2ctl
+- name: "Configure servername"
+  lineinfile:
+    path: "{{ apache2_conf_path }}/apache2.conf"
+    line: "ServerName {{ ansible_hostname }}.ikoula.biz"
+  tags: apache2

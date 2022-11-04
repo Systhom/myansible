@@ -1,0 +1,65 @@
+---
+
+- name: Ensure postgres is disabled and stopped | part1
+  service:
+    name: "postgresql@{{ postgres_version }}-main"
+    state: stopped
+    enabled: no
+  tags:
+    - postgres
+
+- name: Ensure postgres is disabled and stopped | part2
+  command: "echo disabled > /etc/postgresql/{{ postgres_version }}/main/start.conf"
+  tags:
+    - postgres
+
+- name: Add postgresql config for corosync pacemaker
+  shell: 
+    cmd: |
+      crm conf <<EOC
+      # 1. resource pgsqld
+      primitive pgsqld pgsqlms                                                     \
+      params pgdata="/var/lib/postgresql/{{ postgres_version }}/main"                                \
+      bindir="/usr/lib/postgresql/{{ postgres_version }}/bin"                                 \
+      pghost="/var/run/postgresql"                                        \
+      recovery_template="/etc/postgresql/{{ postgres_version }}/main/recovery.conf.pcmk"      \
+      start_opts="-c config_file=/etc/postgresql/{{ postgres_version }}/main/postgresql.conf" \
+      op start timeout=60s                                                       \
+      op stop timeout=60s                                                        \
+      op promote timeout=30s                                                     \
+      op demote timeout=120s                                                     \
+      op monitor interval=15s timeout=10s role="Master"                          \
+      op monitor interval=16s timeout=10s role="Slave"                           \
+      op notify timeout=60s
+
+      # 2. resource pgsql-ha
+      ms pgsql-ha pgsqld meta notify=true
+
+      # 3. colocation of the pgsql-ha master and the vIP address
+      colocation ip-with-pri inf: VIP pgsql-ha:Master
+
+      # 4. ordering constraint
+      order promote-then-ip Mandatory:         \
+      pgsql-ha:promote VIP:start \
+      sequential=true symmetrical=false
+
+      order demote-then-stop-ip Mandatory:   \
+      pgsql-ha:demote VIP:stop \
+      sequential=true symmetrical=false
+
+      EOC
+  when: role == "master"
+  tags: 
+    - postgres
+
+- name: Wait 5 seconds before cleanup
+  wait_for:
+    timeout: 5
+  tags:
+    - postgres
+
+- name: Cleanup resource corosync pacemaker
+  command: crm resource cleanup pgsqld
+  when: role == "master"
+  tags:
+    - postgres

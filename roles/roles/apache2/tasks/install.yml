@@ -1,0 +1,16 @@
+---
+
+# 1. Installation d'apache2 via apt
+- name: "Ensure apache2 is installed and updated"
+  apt:
+    name: "apache2"
+    state: "latest"
+  tags: apache2
+
+# 2. Activation du service apache2
+- name: "Activating apache2 service"
+  service:
+    name: "apache2"
+    state: "started"
+    enabled: yes
+  tags: apache2

@@ -1,0 +1,18 @@
+---
+# vars file for apache2
+ansible_python_interpreter: /usr/bin/python3
+ansible_host_key_checking: false
+
+apache2_logrotate: "/etc/logrotate.d/apache2"
+apache2_conf_path: "/etc/apache2"
+apache2_vhosts: 
+  - servername: test.ansible.com
+    ssl: True
+    redirect: True
+    extra_parameters: ""
+  - servername: test2.ansible.com
+    ssl: True
+    redirect: True
+apache2_modules:
+  - module: ssl
+  - module: rewrite

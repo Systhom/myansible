@@ -1,0 +1,8 @@
+---
+
+- name: "Ensure mariadb is installed" 
+  apt: 
+    name: "mariadb-server,python3-mysqldb"
+    state: "present"
+    update_cache: true
+  tags: mariadb

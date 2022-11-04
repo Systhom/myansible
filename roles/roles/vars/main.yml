@@ -1,0 +1,16 @@
+---
+# vars file for mariadb
+ansible_python_interpreter: /usr/bin/python3
+ansible_host_key_checking: false
+
+mariadb_conf_file: "/etc/mysql/mariadb.conf.d/50-server.cnf"
+
+mariadb_databases:
+  - db: "wordpress"
+    user: "us_wordpress"
+    password: "123456"
+    host: "localhost"
+  - db: "prestashop"
+    user: "us_prestashop"
+    password: "131241232131"
+    host: "%"

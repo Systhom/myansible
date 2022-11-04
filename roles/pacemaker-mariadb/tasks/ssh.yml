@@ -1,0 +1,55 @@
+---
+
+- name: Test de connexion
+  ping:
+
+
+- name: Check if ssh key exist
+  stat:
+    path: ~/.ssh/id_rsa
+  register: stat_sshkey
+  tags:
+    - ssh
+
+- name: Generate SSH Key
+  openssh_keypair:
+    path: ~/.ssh/id_rsa
+    type: rsa
+    size: 4096
+  when: role == "master" and not stat_sshkey.stat.exists
+  tags:
+    - ssh
+
+- name: Check SSH key
+  command: cat ~/.ssh/id_rsa.pub
+  when: role == "master"
+  register: ssh_key_master
+  tags:
+    - ssh
+
+- name: Set authorized key on slave
+  authorized_key:
+    user: root
+    state: present
+    key: "{{ hostvars['node1'].ssh_key_master.stdout }}"
+  when: role == "slave"
+  tags:
+    - ssh
+
+- name: Scan for SSH host keys of node2
+  command: "ssh-keyscan -H {{ hostvars['node2'].ip_internal }} 2>/dev/null"
+  changed_when: false
+  register: ssh_scan
+  tags:
+    - ssh
+
+- name: Update known_hosts of node1
+  known_hosts:
+    key: "{{ item }}"
+    name: "{{ hostvars['node2'].ip_internal }}"
+    state: present
+    hash_host: true
+  with_items: "{{ ssh_scan.stdout_lines }}"
+  when: role == "master"
+  tags:
+    - ssh

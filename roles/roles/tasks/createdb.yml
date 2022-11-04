@@ -1,0 +1,9 @@
+---
+
+- name: "Ensure databases exist"
+  mysql_db:
+    name: "{{ item.db }}"
+    state: present
+  with_items: "{{ mariadb_databases }}"
+  when: mariadb_databases != ""
+  register: mariadb

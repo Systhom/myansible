@@ -1,0 +1,60 @@
+<VirtualHost *:80>
+
+	ServerName {{ item.servername }} 
+
+	DocumentRoot /var/www/{{ item.servername }} 
+
+        <Directory /var/www/{{ item.servername }}>
+                Options -Indexes +FollowSymLinks +MultiViews
+                AllowOverride all
+		Require all granted
+        </Directory>
+
+	{% if item.redirect|default(False) %}
+
+        RewriteCond %{HTTPS} !=On
+        RewriteRule ^ https://%{SERVER_NAME}%{REQUEST_URI}%{QUERY_STRING} [R=301,L]
+
+	{% endif %}
+
+	{% if item.extra_parameters is defined %}
+  	
+	{{ item.extra_parameters }}
+	
+	{% endif %}
+
+	ErrorLog ${APACHE_LOG_DIR}/{{ item.servername }}.error.log
+	CustomLog ${APACHE_LOG_DIR}/{{ item.servername }}.access.log combined
+
+</VirtualHost>
+
+{% if item.ssl|default(False) %}
+
+<VirtualHost *:443>
+
+        ServerName {{ item.servername }}
+
+        DocumentRoot /var/www/{{ item.servername }}
+
+        <Directory /var/www/{{ item.servername }}>
+                Options -Indexes +FollowSymLinks +MultiViews
+                AllowOverride all
+                Require all granted
+        </Directory>
+
+	{% if item.extra_parameters is defined %}
+  	
+	{{ item.extra_parameters }}
+
+	{% endif %}
+
+	SSLEngine On
+        SSLCertificateFile /etc/ssl/certs/ssl-cert-snakeoil.pem
+        SSLCertificateKeyFile /etc/ssl/private/ssl-cert-snakeoil.key
+
+        ErrorLog ${APACHE_LOG_DIR}/{{ item.servername }}.error.log
+        CustomLog ${APACHE_LOG_DIR}/{{ item.servername }}.access.log combined
+
+</VirtualHost>
+
+{% endif %}

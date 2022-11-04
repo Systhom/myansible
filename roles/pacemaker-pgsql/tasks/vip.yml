@@ -1,0 +1,11 @@
+---
+
+- name: Add VIP on Cluster
+  command: "crm configure primitive VIP ocf:heartbeat:IPaddr2 params ip={{ item.vip }} cidr_netmask={{ item.netmask }} nic={{ item.int }} op monitor interval='60s' meta target-role='Started'"
+  when: vip_config != "" and role == "master"
+  with_items:
+    - "{{ vip_config }}"
+  no_log: true
+  ignore_errors: yes
+  tags:
+    - corosync

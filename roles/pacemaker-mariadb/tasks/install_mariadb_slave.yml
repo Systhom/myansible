@@ -1,0 +1,63 @@
+---
+
+- name: packages | install mariadb
+  apt:
+    name:
+      - mariadb-server
+      - python3-mysqldb
+    update_cache: true
+    state: present
+  when: role == "slave"
+  tags:
+    - mariadb
+
+- name: MariaDB configuration
+  lineinfile:
+    path: /etc/mysql/mariadb.conf.d/50-server.cnf
+    regexp: '{{ item.from }}'
+    state: present
+    line: '{{ item.to }}'
+  with_items:
+  - { from: '^#server-id', to: "server-id              = 2" }
+  - { from: '^#log_bin', to: "log_bin                = /var/log/mysql/mysql-bin.log" }
+  - { from: '^expire_logs_days', to: "expire_logs_days        = 10" }
+  - { from: '^bind-address', to: "bind-address            = 0.0.0.0" }
+  when: role == "slave"
+  tags:
+    - mariadb
+
+- name: Restart MariaDB
+  service:
+    name: "{{ item }}"
+    state: restarted
+  with_items:
+    - mariadb
+  when: role == "slave"
+  tags:
+    - mariadb
+
+- name: Creating mariadb user repl_user
+  community.mysql.mysql_user:
+    name: repl_user
+    password: "{{ mariadb_repl_user_password }}"
+    host: "{{ item }}"
+    priv: "*.*:RELOAD,PROCESS,REPLICATION SLAVE,REPLICATION CLIENT,SUPER"
+  with_items:
+  - "localhost"
+  - "{{ hostvars['node1'].ip_internal }}"
+  when: role == "slave"
+  tags:
+    - mariadb
+
+- name: Creating mariadb user pacemaker
+  community.mysql.mysql_user:
+    name: pacemaker
+    password: "{{ mariadb_pacemaker_password }}"
+    host: "{{ item }}"
+    priv: "*.*:SELECT"
+  with_items:
+  - "localhost"
+  - "{{ hostvars['node1'].ip_internal }}"
+  when: role == "slave"
+  tags:
+    - mariadb

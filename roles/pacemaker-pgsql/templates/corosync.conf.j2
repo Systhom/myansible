@@ -1,0 +1,59 @@
+totem {
+        version: 2
+        secauth: on
+        cluster_name: {{ corosync_clustername }}
+        token: 3000
+        token_retransmits_before_loss_const: 10
+        clear_node_high_bit: yes
+        crypto_cipher: none
+        crypto_hash: none
+        transport: knet
+        link_mode: passive
+        interface {
+                linknumber: 0
+                knet_link_priority: 1
+        }
+}
+
+nodelist {
+        node {
+                name: {{ corosync_node1_hostname }}
+                nodeid: 1
+                ring0_addr: {{ hostvars['node1'].ip_internal }}
+        }
+        node {
+                name: {{ corosync_node2_hostname }}
+                nodeid: 2
+                ring0_addr: {{ hostvars['node2'].ip_internal }}
+        }
+}
+
+quorum {
+                provider: corosync_votequorum
+                two_node: 1
+                wait_for_all: 1
+}
+
+logging {
+        fileline: off
+        to_stderr: no
+        to_logfile: yes
+        to_syslog: yes
+        logfile: /var/log/corosync/corosync.log
+        debug: off
+        timestamp: on
+        logger_subsys {
+                subsys: QUORUM
+                debug: off
+        }
+}
+
+service {
+        ver:    0
+        name:   pacemaker
+}
+
+aisexec {
+        user:   root
+        group:  root
+}

@@ -1,0 +1,12 @@
+---
+
+# 1. Vérification et redémarrage d'apache2
+- name: "Check syntax"
+  command: "apache2ctl -t"
+  tags: apache2
+
+- name: "Syntax OK! Restarting apache2..."
+  service:
+    name: apache2
+    state: restarted
+  tags: apache2

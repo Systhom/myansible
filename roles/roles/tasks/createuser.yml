@@ -1,0 +1,10 @@
+---
+
+- name: "Verify/creating user databases"
+  mysql_user: 
+    name: "{{ item.user }}"
+    password: "{{ item.password }}"
+    host: "{{ item.host|default('localhost') }}"
+    priv: "{{ item.db }}.*:ALL"
+    state: present
+  with_items: "{{ mariadb_databases }}"

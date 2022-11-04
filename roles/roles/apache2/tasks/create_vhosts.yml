@@ -1,0 +1,25 @@
+---
+
+# 1. Création de vhosts
+- name: "Creating vHosts"
+  template:
+    src: vhost.j2
+    dest: "{{ apache2_conf_path }}/sites-available/{{ item.servername }}.conf"
+    owner: root
+    group: root
+    mode: '0644'
+  with_items:
+  - "{{ apache2_vhosts }}"
+  when: apache2_vhosts != ""
+  tags: apache2
+
+
+# 2. Activation des vhosts
+- name: "Activating vhosts"
+  command: "a2ensite {{ item.servername }}"
+  with_items:
+  - "{{ apache2_vhosts }}"
+  when: apache2_vhosts != ""
+  register: apache2_activating_vhost
+  changed_when: "'Enabling site' in apache2_activating_vhost.stdout"
+  tags: apache2

@@ -1,0 +1,70 @@
+---
+
+- name: packages | install postgres
+  apt:
+    name:
+      - postgresql
+      - resource-agents-paf
+    update_cache: true
+    state: present
+  when: role == "master"
+  tags:
+    - postgres
+
+- name: Configuration de postgresql.conf | part1 | node1
+  lineinfile: 
+    path: /etc/postgresql/{{ postgres_version }}/main/postgresql.conf
+    state: present
+    line: "{{ item }}"
+  with_items:
+  - "listen_addresses = '0.0.0.0'"
+  - "wal_level = replica"
+  - "max_wal_senders = 10"
+  - "hot_standby = on"
+  - "hot_standby_feedback = on"
+  - "logging_collector = on"
+  when: role == "master"
+  tags: 
+    - postgres
+
+- name: Configuration de postgresql.conf | part2 | node1
+  lineinfile: 
+    path: /etc/postgresql/{{ postgres_version }}/main/pg_hba.conf
+    state: present
+    line: "{{ item }}"
+  with_items:
+  - "# forbid self-replication"
+  - "host replication postgres {{ hostvars['node1'].ip_internal }}/32 reject"
+  - "host replication postgres {{ corosync_node1_hostname }} reject"
+  - "# allow any standby connection"
+  - "host replication postgres {{ hostvars['node2'].ip_internal }}/32 trust"
+  when: role == "master"
+  tags:
+    - postgres
+
+- name: Configuration de postgresql.conf | part3 | node1 
+  lineinfile:
+    path: /etc/postgresql/{{ postgres_version }}/main/recovery.conf.pcmk
+    state: present
+    create: yes
+    owner: root
+    group: root
+    mode: '0644'
+    line: "{{ item }}"
+  with_items:
+  - "standby_mode = on"
+  - "primary_conninfo = 'host={{ postgres_vip }} application_name={{ corosync_node1_hostname }}'"
+  - "recovery_target_timeline = 'latest'"
+  when: role == "master"
+  tags:
+    - postgres
+
+- name: Restart postgresql
+  service:
+    name: "{{ item }}"
+    state: restarted
+  with_items:
+    - postgresql@{{ postgres_version }}-main
+  when: role == "master"
+  tags:
+    - postgres

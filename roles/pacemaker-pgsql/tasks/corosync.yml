@@ -1,0 +1,51 @@
+---
+
+- name: Add hosts in /etc/hosts
+  lineinfile:
+    path: /etc/hosts
+    state: present
+    line: "{{ item }}"
+  with_items:
+    - "{{ hostvars['node1'].ip_internal }} {{ corosync_node1_hostname }}"
+    - "{{ hostvars['node2'].ip_internal }} {{ corosync_node2_hostname }}"
+  tags:
+    - corosync
+
+
+- name: Generate corosync authkey
+  command: corosync-keygen
+  when: role == "master"
+  tags:
+    - corosync
+
+- name: Copy corosync authkey to slave
+  command: "scp /etc/corosync/authkey root@{{ hostvars['node2'].ip_internal }}:/etc/corosync/"
+  when: role == "master"
+  tags:
+    - corosync
+
+- name: Add corosync configuration
+  template: 
+    src: corosync.conf.j2
+    dest: "/etc/corosync/corosync.conf"
+    owner: root
+    group: root
+    mode: '0644'
+  tags:
+    - corosync
+
+- name: "Restart corosync / pacemaker"
+  service:
+    name: "{{ item }}"
+    state: restarted
+  with_items:
+    - corosync
+    - pacemaker
+  tags:
+    - corosync
+
+- name: Disable stonith and quorum policy
+  command: crm configure property stonith-enabled="false" no-quorum-policy="ignore"
+  when: role == "master"
+  tags:
+    - corosync

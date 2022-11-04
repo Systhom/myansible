@@ -1,0 +1,18 @@
+---
+# vars file for pacemaker-pgsql
+
+ansible_python_interpreter: /usr/bin/python3
+ansible_host_key_checking: false
+ansible_ssh_host_key_checking: false
+
+corosync_clustername: "Cluster-TC"
+corosync_node1_hostname: "TC-Ansible1"
+corosync_node2_hostname: "TC-Ansible2"
+
+vip_config:
+  - vip: 10.1.1.232
+    int: eth0
+    netmask: 24
+
+postgres_version: 11
+postgres_vip: 10.1.1.232

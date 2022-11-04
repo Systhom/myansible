@@ -1,0 +1,50 @@
+---
+
+- name: Ensure mariadb is disabled and stopped
+  service:
+    name: mariadb
+    state: stopped
+    enabled: no
+  tags:
+    - mariadb
+
+- name: Add mysql config for corosync pacemaker
+  shell: 
+    cmd: |
+      crm conf <<EOC
+      primitive MARIADB mysql \
+      params binary="/usr/sbin/mysqld" user=mysql log="/var/log/mysql.log" config="/etc/mysql/my.cnf" datadir="/var/lib/mysql" \
+      pid="/var/run/mysqld/mysqld.pid" socket="/var/run/mysqld/mysqld.sock" replication_user=repl_user \
+      replication_passwd={{ mariadb_repl_user_password }} test_user=pacemaker test_passwd={{ mariadb_pacemaker_password }} additional_parameters="--bind-address=0.0.0.0" \
+      meta migration-threshold=1 \
+      meta target-role=Started is-managed=true \
+      op start timeout=120 interval=0 \
+      op stop timeout=120 interval=0 \
+      op monitor role=Master interval=10s timeout=30s \
+      op monitor role=Slave interval=20s timeout=30s
+
+      ms MARIADBREPLICATOR MARIADB \
+      meta target-role=Started master-max=1 master-node-max=1 clone-max=2 clone-node-max=1 notify=true interleave=true is-managed=true
+
+      order MARIADBREPLICATOR_promote_before_VIP Mandatory: \ 
+      MARIADBREPLICATOR:promote VIP:start
+
+      colocation VIP_ON_MASTER Mandatory: \
+      VIP MARIADBREPLICATOR:Master
+
+      EOC
+  when: role == "master"
+  tags: 
+    - mariadb
+
+- name: Wait 5 seconds before cleanup
+  wait_for:
+    timeout: 5
+  tags:
+    - mariadb
+
+- name: Cleanup resource corosync pacemaker
+  command: crm resource cleanup MARIADB
+  when: role == "master"
+  tags:
+    - mariadb

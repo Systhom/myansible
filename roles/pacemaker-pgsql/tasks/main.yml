@@ -1,0 +1,10 @@
+---
+# tasks file for pacemaker-pgsql
+
+- include_tasks: ssh.yml
+- include_tasks: packages.yml
+- include_tasks: corosync.yml
+- include_tasks: vip.yml
+- include_tasks: install_postgres_master.yml
+- include_tasks: install_postgres_slave.yml
+- include_tasks: postgres_cluster.yml

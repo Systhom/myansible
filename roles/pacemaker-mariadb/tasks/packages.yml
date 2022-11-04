@@ -1,0 +1,9 @@
+---
+- name: packages | dependencies
+  apt:
+    name:
+      - corosync
+      - pacemaker
+      - crmsh
+    update_cache: true
+    state: present

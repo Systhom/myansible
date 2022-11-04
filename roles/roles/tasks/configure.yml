@@ -1,0 +1,9 @@
+---
+
+- name: "Configure listen 0.0.0.0"
+  lineinfile: 
+    path: "{{ mariadb_conf_file }}"
+    regexp: '127.0.0.1'
+    line: '0.0.0.0'
+    backrefs: yes
+  notify: ["restart mariadb"]
